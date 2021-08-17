@@ -11,18 +11,7 @@ from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
 
 from .config import Config
 
-CLIENT_ID = '435587535150907392'
-PLAYER_ICONS = {
-    # Maps player identity name to icon name
-    # https://discord.com/developers/applications/435587535150907392/rich-presence/assets
-    'Clementine': 'clementine',
-    'Media Player Classic Qute Theater': 'mpc-qt',
-    'mpv': 'mpv',
-    'Music Player Daemon': 'mpd',
-    'VLC media player': 'vlc',
-    'SMPlayer': 'smplayer',
-    'Lollypop': 'lollypop',
-}
+CLIENT_ID = '877206476496699453'
 DEFAULT_LOG_LEVEL = logging.WARNING
 
 logger = logging.getLogger(__name__)
@@ -119,12 +108,7 @@ class DiscordMpris:
         replacements['state'] = state
 
         # TODO pref
-        if replacements['artist']:
-            # details_fmt = "{artist} - {title}"
-            details_fmt = "{title}\nby {artist}"
-        else:
-            details_fmt = "{title}"
-        activity['details'] = self.format_details(details_fmt, replacements)
+        activity['details'] = replacements['title']
 
         # set state and timestamps
         activity['timestamps'] = {}
@@ -141,16 +125,13 @@ class DiscordMpris:
             activity['state'] = self.format_details("{state} [{position}/{length}]", replacements)
         else:
             activity['state'] = self.format_details("{state}", replacements)
+        activity['state'] = replacements['artist']
 
         # set icons and hover texts
-        if player.name in PLAYER_ICONS:
-            activity['assets'] = {'large_text': player.name,
-                                  'large_image': PLAYER_ICONS[player.name],
-                                  'small_image': state.lower(),
-                                  'small_text': state}
-        else:
-            activity['assets'] = {'large_text': f"{player.name} ({state})",
-                                  'large_image': state.lower()}
+        activity['assets'] = {'large_text': replacements['album'],
+                                'large_image': 'miku',
+                                'small_image': 'play-button',
+                                'small_text': state}
 
         if activity != self.last_activity:
             op_recv, result = await self.discord.set_activity(activity)
